@@ -171,7 +171,10 @@ export function findNextWindow(hours, th, startTimeISO) {
   const startIdx = hours.findIndex(h => new Date(h.time).getTime() >= startTime);
   const from = startIdx >= 0 ? startIdx : 0;
 
-  for (let i = from; i < hours.length; i++) {
+  const maxHours = th.horizon_hours ?? hours.length;
+  const to = Math.min(from + maxHours, hours.length);
+
+  for (let i = from; i < to; i++) {
     const ev = evaluateAt(i, hours, th);
     if (ev.ok) {
       const start = hours[i].time;
