@@ -1,5 +1,5 @@
 (() => {
-  const $ = (id) => document.getElementById(id);
+  const $ = (id) => document.getElementById(id) || null;
 
   const locEl = $("loc");
   const checkBtn = $("checkBtn");
