@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "units": "us",
+  "horizon_hours": 72,
+  "evaluation": {
+    "min_window_hours": 3,
+    "time_step_minutes": 60,
+    "round_start_to_next_hour": true
+  },
+  "global": {
+    "rain_probability_max_pct": 15,
+    "precipitation_max_mm": 0.0,
+    "min_temp_f": 55,
+    "overnight_min_temp_f": 50
+  },
+  "tasks": {
+    "paint": {
+      "label": "Exterior Paint (brush/roll)",
+      "max_humidity_pct": 75,
+      "max_wind_mph": 15,
+      "no_rain_buffer_hours": 12
+    },
+    "stain": {
+      "label": "Deck Stain (oil/water-based)",
+      "max_humidity_pct": 70,
+      "max_wind_mph": 20,
+      "no_rain_buffer_hours": 24
+    }
+  }
+}

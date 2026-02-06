@@ -1,0 +1,38 @@
+{
+  "task": "paint | stain",
+  "location": {
+    "query": "string",
+    "name": "string",
+    "admin1": "string|null",
+    "country": "string|null",
+    "lat": "number",
+    "lon": "number",
+    "timezone": "string"
+  },
+  "generated_at": "ISO-8601 string",
+  "now": {
+    "start": "ISO-8601 string",
+    "end": "ISO-8601 string",
+    "go": "boolean",
+    "risk": "low|medium|high",
+    "summary": "string",
+    "reasons": [
+      {
+        "code": "string",
+        "message": "string",
+        "observed": "object",
+        "threshold": "object"
+      }
+    ]
+  },
+  "next_window": {
+    "start": "ISO-8601 string|null",
+    "end": "ISO-8601 string|null",
+    "duration_hours": "number|null",
+    "risk": "low|medium|high|null",
+    "summary": "string|null",
+    "reasons": "same as now.reasons (optional)"
+  },
+  "thresholds": "echoed thresholds object used for evaluation",
+  "disclaimer": "string"
+}

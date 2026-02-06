@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Paint or Stain Today? Professional-Safe Weather Window</title>
+  <meta name="description" content="Go/no-go guidance for exterior painting and deck staining based on conservative, professional-safe weather thresholds for your location." />
+  <link rel="canonical" href="/" />
+  <meta property="og:title" content="Paint or Stain Today?" />
+  <meta property="og:description" content="Professional-safe weather windows for exterior paint and deck stain." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="/" />
+  <meta property="og:image" content="/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <div>
+        <h1>Paint or Stain Today?</h1>
+        <p class="sub">Professional-safe go/no-go guidance using forecasted temperature, humidity, wind, and rain risk.</p>
+      </div>
+      <a class="coffee" href="#" id="coffeeLink" aria-label="Buy me a coffee">☕ Buy me a coffee</a>
+    </header>
+
+    <section class="card">
+      <div class="row">
+        <label for="loc" class="label">Location</label>
+        <input id="loc" class="input" inputmode="text" placeholder="ZIP or City (e.g., 54552 or Madison)" autocomplete="postal-code" />
+      </div>
+
+      <div class="row">
+        <div class="label">Task</div>
+        <div class="seg">
+          <button class="segbtn active" data-task="paint" type="button">Exterior Paint</button>
+          <button class="segbtn" data-task="stain" type="button">Deck Stain</button>
+        </div>
+      </div>
+
+      <div class="row actions">
+        <button id="checkBtn" class="btn" type="button">Check Conditions</button>
+        <button id="shareBtn" class="btn ghost" type="button">Copy Share Link</button>
+      </div>
+
+      <p class="fine">This tool is intentionally conservative. It prefers false “no” over costly callbacks.</p>
+      <p class="fine muted">Guidance only. Product labels and substrate moisture can override forecast rules.</p>
+    </section>
+
+    <section class="card" id="results" hidden>
+      <div class="resultsTop">
+        <div>
+          <h2 id="headline">Results</h2>
+          <p class="muted" id="whereWhen"></p>
+        </div>
+        <span id="badge" class="badge">...</span>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h3>Now</h3>
+          <p class="big" id="nowSummary"></p>
+          <ul id="nowReasons" class="reasons"></ul>
+        </div>
+
+        <div class="panel">
+          <h3>Next Window</h3>
+          <p class="big" id="nextSummary"></p>
+          <p class="muted" id="nextWindow"></p>
+        </div>
+      </div>
+
+      <details class="details">
+        <summary>Show thresholds used</summary>
+        <pre id="thresholds" class="code"></pre>
+      </details>
+    </section>
+
+    <footer class="footer">
+      <p class="muted">Made for pros who cannot afford rework.</p>
+    </footer>
+  </main>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
