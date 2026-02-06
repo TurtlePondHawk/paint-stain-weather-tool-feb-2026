@@ -1,6 +1,8 @@
 (() => {
+  // Safe element getter by id
   const $ = (id) => document.getElementById(id) || null;
 
+  // Grab elements (may be null if HTML changed)
   const locEl = $("loc");
   const checkBtn = $("checkBtn");
   const shareBtn = $("shareBtn");
@@ -15,52 +17,95 @@
   const thresholds = $("thresholds");
   const coffeeLink = $("coffeeLink");
 
-  // Replace with your real link later:
-  coffeeLink.href = "https://www.buymeacoffee.com/";
+  // If essential elements are missing, do not crash.
+  // This prevents "button not working" caused by early JS exceptions.
+  if (!locEl || !checkBtn) {
+    console.error("Missing required elements: loc and/or checkBtn. Check your public/index.html IDs.");
+    return;
+  }
+
+  // Optional elements: guard before use
+  if (coffeeLink) {
+    // Replace with your real link
+    coffeeLink.href = "https://www.buymeacoffee.com/";
+    coffeeLink.target = "_blank";
+    coffeeLink.rel = "noopener noreferrer";
+  }
 
   let task = "paint";
 
   function setTask(next) {
     task = next;
-    document.querySelectorAll(".segbtn").forEach(btn => {
+    document.querySelectorAll(".segbtn").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.task === next);
     });
   }
 
-  document.querySelectorAll(".segbtn").forEach(btn => {
+  // Segmented buttons are optional; no crash if missing
+  document.querySelectorAll(".segbtn").forEach((btn) => {
     btn.addEventListener("click", () => setTask(btn.dataset.task));
   });
 
   function fmt(dtIso) {
     if (!dtIso) return "";
     const d = new Date(dtIso);
-    return d.toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    return d.toLocaleString([], {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
   }
 
   function setBadge(go, risk) {
+    if (!badge) return;
     badge.className = "badge";
+    const r = (risk || "medium").toUpperCase();
+
     if (go) {
-      badge.textContent = `GO · ${risk.toUpperCase()} RISK`;
+      badge.textContent = `GO · ${r} RISK`;
       badge.classList.add("good");
     } else {
-      badge.textContent = `NO-GO · ${risk.toUpperCase()} RISK`;
-      badge.classList.add(risk === "high" ? "bad" : "warn");
+      badge.textContent = `NO-GO · ${r} RISK`;
+      badge.classList.add((risk || "medium") === "high" ? "bad" : "warn");
     }
   }
 
   function renderReasons(list) {
+    if (!nowReasons) return;
     nowReasons.innerHTML = "";
+
     if (!list || list.length === 0) {
       const li = document.createElement("li");
       li.textContent = "All thresholds are satisfied for the work window and curing buffer.";
       nowReasons.appendChild(li);
       return;
     }
-    list.forEach(r => {
+
+    list.forEach((r) => {
       const li = document.createElement("li");
-      li.textContent = r.message;
+      li.textContent = r.message || String(r);
       nowReasons.appendChild(li);
     });
+  }
+
+  function getErrorMessage(data, fallback) {
+    // Supports:
+    // - old shape: { error: "..." }
+    // - new shape: { error: { message: "...", hint: "..."} }
+    const e = data?.error;
+    if (!e) return fallback;
+
+    if (typeof e === "string") return e;
+
+    if (typeof e === "object") {
+      const msg = e.message || fallback;
+      const hint = e.hint ? ` ${e.hint}` : "";
+      return (msg + hint).trim();
+    }
+
+    return fallback;
   }
 
   async function run() {
@@ -71,55 +116,79 @@
     }
 
     checkBtn.disabled = true;
+    const originalBtnText = checkBtn.textContent;
     checkBtn.textContent = "Checking…";
 
     try {
       const url = `/api/forecast?task=${encodeURIComponent(task)}&loc=${encodeURIComponent(loc)}`;
       const res = await fetch(url);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Request failed");
+      const data = await res.json().catch(() => ({}));
 
-      headline.textContent = `${data.thresholds.label}`;
-      whereWhen.textContent = `${data.location.name}${data.location.admin1 ? ", " + data.location.admin1 : ""}${data.location.country ? ", " + data.location.country : ""} · Evaluated from ${fmt(data.now.start)}`;
+      if (!res.ok) {
+        throw new Error(getErrorMessage(data, "Request failed"));
+      }
 
-      setBadge(data.now.go, data.now.risk);
-      nowSummary.textContent = data.now.summary;
-      renderReasons(data.now.reasons);
+      if (headline) headline.textContent = `${data?.thresholds?.label || ""}`;
 
-      nextSummary.textContent = data.next_window.summary || "";
-      nextWindow.textContent = data.next_window.start
-        ? `Best window: ${fmt(data.next_window.start)} to ${fmt(data.next_window.end)} (${data.next_window.duration_hours}h)`
-        : "No safe window found in the next few days.";
+      if (whereWhen) {
+        const name = data?.location?.name || "";
+        const admin1 = data?.location?.admin1 ? `, ${data.location.admin1}` : "";
+        const country = data?.location?.country ? `, ${data.location.country}` : "";
+        const evaluated = data?.now?.start ? ` · Evaluated from ${fmt(data.now.start)}` : "";
+        whereWhen.textContent = `${name}${admin1}${country}${evaluated}`;
+      }
 
-      thresholds.textContent = JSON.stringify(data.thresholds, null, 2);
+      setBadge(!!data?.now?.go, data?.now?.risk);
 
-      results.hidden = false;
-      results.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (nowSummary) nowSummary.textContent = data?.now?.summary || "";
+      renderReasons(data?.now?.reasons);
+
+      if (nextSummary) nextSummary.textContent = data?.next_window?.summary || "";
+
+      if (nextWindow) {
+        nextWindow.textContent = data?.next_window?.start
+          ? `Best window: ${fmt(data.next_window.start)} to ${fmt(data.next_window.end)} (${data.next_window.duration_hours}h)`
+          : "No safe window found in the next few days.";
+      }
+
+      if (thresholds) thresholds.textContent = JSON.stringify(data?.thresholds || {}, null, 2);
+
+      if (results) {
+        results.hidden = false;
+        results.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     } catch (e) {
-      alert(e.message || String(e));
+      alert(e?.message || String(e));
     } finally {
       checkBtn.disabled = false;
-      checkBtn.textContent = "Check Conditions";
+      checkBtn.textContent = originalBtnText || "Check Conditions";
     }
   }
 
   checkBtn.addEventListener("click", run);
+
   locEl.addEventListener("keydown", (e) => {
     if (e.key === "Enter") run();
   });
 
-  shareBtn.addEventListener("click", async () => {
-    const loc = locEl.value.trim();
-    if (!loc) { alert("Enter a location first."); return; }
-    const shareUrl = `${location.origin}/?task=${encodeURIComponent(task)}&loc=${encodeURIComponent(loc)}`;
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      shareBtn.textContent = "Copied";
-      setTimeout(() => shareBtn.textContent = "Copy Share Link", 900);
-    } catch {
-      prompt("Copy link:", shareUrl);
-    }
-  });
+  // Share button is optional
+  if (shareBtn) {
+    shareBtn.addEventListener("click", async () => {
+      const loc = locEl.value.trim();
+      if (!loc) {
+        alert("Enter a location first.");
+        return;
+      }
+      const shareUrl = `${location.origin}/?task=${encodeURIComponent(task)}&loc=${encodeURIComponent(loc)}`;
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        shareBtn.textContent = "Copied";
+        setTimeout(() => (shareBtn.textContent = "Copy Share Link"), 900);
+      } catch {
+        prompt("Copy link:", shareUrl);
+      }
+    });
+  }
 
   // Auto-fill from query string
   const params = new URLSearchParams(location.search);
@@ -128,3 +197,4 @@
   if (qTask === "paint" || qTask === "stain") setTask(qTask);
   if (qLoc) locEl.value = qLoc;
 })();
+
