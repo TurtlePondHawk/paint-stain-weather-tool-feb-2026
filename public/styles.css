@@ -57,3 +57,12 @@ h3{margin:0 0 8px}
 .code{margin-top:8px;background:rgba(0,0,0,.22);border:1px solid var(--border);border-radius:12px;padding:12px;overflow:auto;color:#cfe3ff}
 .footer{margin-top:18px;color:var(--muted);font-size:13px}
 .muted{color:var(--muted)}
+.disclaimer-link {
+  color: #ffffff;
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
+.disclaimer-link:hover {
+  opacity: 1;
+}
