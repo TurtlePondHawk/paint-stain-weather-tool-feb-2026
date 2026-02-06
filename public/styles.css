@@ -66,3 +66,11 @@ h3{margin:0 0 8px}
 .disclaimer-link:hover {
   opacity: 1;
 }
+.bmac-link{
+  color: #ffffff;
+  text-decoration: underline;
+  opacity: 0.95;
+}
+.bmac-link:hover{
+  opacity: 1;
+}
